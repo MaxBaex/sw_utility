@@ -1,6 +1,7 @@
 #include "audio.h"
 #include "cmsis_os.h"
 #include "stm32f1xx_hal.h"
+#include "main.h"
 
 #define NS       128
 #define TIM4CLK  72000000
@@ -22,6 +23,7 @@ uint32_t Wave_LUT[NS] = {
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim4;
 extern DMA_HandleTypeDef hdma_tim4_ch1;
+extern DMA_HandleTypeDef hdma_tim4_ch2;
 
 uint32_t DestAddress = (uint32_t) &(TIM2->CCR1);
 uint32_t TIM4_Ticks = TIM4CLK / (NS * F_SIGNAL);
@@ -38,13 +40,43 @@ void StartAudioTask(void *argument)
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   HAL_TIM_OC_Start(&htim4, TIM_CHANNEL_1);
   HAL_DMA_Start_IT(&hdma_tim4_ch1, (uint32_t)Wave_LUT, DestAddress, NS);
+  HAL_DMA_Start_IT(&hdma_tim4_ch2, (uint32_t)Wave_LUT, DestAddress, NS);
 
   __HAL_TIM_ENABLE_DMA(&htim4, TIM_DMA_CC1);
+  __HAL_TIM_ENABLE_DMA(&htim4, TIM_DMA_CC2);
+
+  /*
+   * PA7,  PA6,  PA5,   PA4,   PA3,    PA2
+   * 0x80  0x40  0x20   0x10   0x08    0x04
+   *
+   * Pin = 0 => low volume,  Pin = 1 => high volume
+   *
+   * lowest volume =  0x111111XX
+   * highest volume = 0x000000XX
+   *
+   */
 
 
   for(;;)
   {
-    osDelay(1);
+
+
+    HAL_GPIO_WritePin(GPIOA, ATTN_1_Pin, GPIO_PIN_RESET);
+    osDelay(1000);
+    HAL_GPIO_WritePin(GPIOA, ATTN_2_Pin, GPIO_PIN_RESET);
+    osDelay(1000);
+    HAL_GPIO_WritePin(GPIOA, ATTN_3_Pin, GPIO_PIN_RESET);
+    osDelay(1000);
+    HAL_GPIO_WritePin(GPIOA, ATTN_4_Pin, GPIO_PIN_RESET);
+    osDelay(1000);
+    HAL_GPIO_WritePin(GPIOA, ATTN_5_Pin, GPIO_PIN_RESET);
+    osDelay(1000);
+    HAL_GPIO_WritePin(GPIOA, ATTN_6_Pin, GPIO_PIN_RESET);
+    osDelay(1000);
+
+
+    GPIOA->ODR = 0xFC;   // Set maximum volume
+    osDelay(5000);
   }
 
 }

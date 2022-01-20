@@ -61,6 +61,16 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define ATTN_1_Pin GPIO_PIN_2
 #define ATTN_1_GPIO_Port GPIOA
+#define ATTN_2_Pin GPIO_PIN_3
+#define ATTN_2_GPIO_Port GPIOA
+#define ATTN_3_Pin GPIO_PIN_4
+#define ATTN_3_GPIO_Port GPIOA
+#define ATTN_4_Pin GPIO_PIN_5
+#define ATTN_4_GPIO_Port GPIOA
+#define ATTN_5_Pin GPIO_PIN_6
+#define ATTN_5_GPIO_Port GPIOA
+#define ATTN_6_Pin GPIO_PIN_7
+#define ATTN_6_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

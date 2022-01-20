@@ -26,6 +26,8 @@
 /* USER CODE END Includes */
 extern DMA_HandleTypeDef hdma_tim4_ch1;
 
+extern DMA_HandleTypeDef hdma_tim4_ch2;
+
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
 
@@ -338,6 +340,22 @@ void HAL_TIM_OC_MspInit(TIM_HandleTypeDef* htim_oc)
 
     __HAL_LINKDMA(htim_oc,hdma[TIM_DMA_ID_CC1],hdma_tim4_ch1);
 
+    /* TIM4_CH2 Init */
+    hdma_tim4_ch2.Instance = DMA1_Channel4;
+    hdma_tim4_ch2.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_tim4_ch2.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_tim4_ch2.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_tim4_ch2.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    hdma_tim4_ch2.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+    hdma_tim4_ch2.Init.Mode = DMA_NORMAL;
+    hdma_tim4_ch2.Init.Priority = DMA_PRIORITY_HIGH;
+    if (HAL_DMA_Init(&hdma_tim4_ch2) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(htim_oc,hdma[TIM_DMA_ID_CC2],hdma_tim4_ch2);
+
   /* USER CODE BEGIN TIM4_MspInit 1 */
 
   /* USER CODE END TIM4_MspInit 1 */
@@ -410,6 +428,7 @@ void HAL_TIM_OC_MspDeInit(TIM_HandleTypeDef* htim_oc)
 
     /* TIM4 DMA DeInit */
     HAL_DMA_DeInit(htim_oc->hdma[TIM_DMA_ID_CC1]);
+    HAL_DMA_DeInit(htim_oc->hdma[TIM_DMA_ID_CC2]);
   /* USER CODE BEGIN TIM4_MspDeInit 1 */
 
   /* USER CODE END TIM4_MspDeInit 1 */
