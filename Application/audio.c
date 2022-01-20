@@ -25,7 +25,8 @@ extern TIM_HandleTypeDef htim4;
 extern DMA_HandleTypeDef hdma_tim4_ch1;
 extern DMA_HandleTypeDef hdma_tim4_ch2;
 
-uint32_t DestAddress = (uint32_t) &(TIM2->CCR1);
+uint32_t DestAddress_ch1 = (uint32_t) &(TIM2->CCR1);
+uint32_t DestAddress_ch2 = (uint32_t) &(TIM2->CCR2);
 uint32_t TIM4_Ticks = TIM4CLK / (NS * F_SIGNAL);
 
 void StartAudioTask(void *argument)
@@ -38,9 +39,11 @@ void StartAudioTask(void *argument)
    }
 
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
   HAL_TIM_OC_Start(&htim4, TIM_CHANNEL_1);
-  HAL_DMA_Start_IT(&hdma_tim4_ch1, (uint32_t)Wave_LUT, DestAddress, NS);
-  HAL_DMA_Start_IT(&hdma_tim4_ch2, (uint32_t)Wave_LUT, DestAddress, NS);
+  HAL_TIM_OC_Start(&htim4, TIM_CHANNEL_2);
+  HAL_DMA_Start_IT(&hdma_tim4_ch1, (uint32_t)Wave_LUT, DestAddress_ch1, NS);
+  HAL_DMA_Start_IT(&hdma_tim4_ch2, (uint32_t)Wave_LUT, DestAddress_ch2, NS);
 
   __HAL_TIM_ENABLE_DMA(&htim4, TIM_DMA_CC1);
   __HAL_TIM_ENABLE_DMA(&htim4, TIM_DMA_CC2);
