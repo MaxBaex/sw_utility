@@ -91,7 +91,7 @@ void StartAudioTask(void *argument)
       HAL_TIM_OC_Stop(&htim4, TIM_CHANNEL_2);
       osDelay(250);
 
-      htim4.Init.Period =  TIM4CLK / (NS * 1000); - 1;
+      htim4.Init.Period =  TIM4CLK / (NS * 1000) - 1;
       HAL_TIM_Base_Init(&htim4);
       HAL_TIM_OC_Start(&htim4, TIM_CHANNEL_1);
       HAL_TIM_OC_Start(&htim4, TIM_CHANNEL_2);
@@ -101,7 +101,7 @@ void StartAudioTask(void *argument)
       HAL_TIM_OC_Stop(&htim4, TIM_CHANNEL_2);
       osDelay(250);
 
-      htim4.Init.Period =  TIM4CLK / (NS * 2000); - 1;
+      htim4.Init.Period =  TIM4CLK / (NS * 2000) - 1;
       HAL_TIM_Base_Init(&htim4);
       HAL_TIM_OC_Start(&htim4, TIM_CHANNEL_1);
       HAL_TIM_OC_Start(&htim4, TIM_CHANNEL_2);
