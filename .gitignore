@@ -1,4 +1,4 @@
-Debug/*
-/Debug/
-/.settings/language.settings.xml
-/Release/
+sw/Debug/*
+sw/Debug/
+sw/.settings/language.settings.xml
+sw/Release/
