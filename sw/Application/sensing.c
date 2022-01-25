@@ -150,13 +150,13 @@ void StartSensingTask(void *argument)
   conf.filter = BME68X_FILTER_OFF;
   conf.odr = BME68X_ODR_NONE;
   conf.os_hum = BME68X_OS_16X;
-  conf.os_pres = BME68X_OS_1X;
-  conf.os_temp = BME68X_OS_2X;
+  conf.os_pres = BME68X_OS_16X; //BME68X_OS_1X;
+  conf.os_temp = BME68X_OS_16X; //BME68X_OS_2X;
   rslt = bme68x_set_conf(&conf, &bme);
   bme68x_check_rslt("bme68x_set_conf", rslt);
 
   /* Check if rslt == BME68X_OK, report or handle if otherwise */
-  heatr_conf.enable = BME68X_ENABLE;
+  heatr_conf.enable = BME68X_DISABLE;   /* Enabling this causes to high temperature values for quick consecutive readings*/
   heatr_conf.heatr_temp = 300;
   heatr_conf.heatr_dur = 100;
   rslt = bme68x_set_heatr_conf(BME68X_FORCED_MODE, &heatr_conf, &bme);
@@ -177,7 +177,7 @@ void StartSensingTask(void *argument)
       bme68x_check_rslt("bme68x_get_data", rslt);
 
 
-      vTaskDelay(250);
+      vTaskDelay(1);
     }
 }
 

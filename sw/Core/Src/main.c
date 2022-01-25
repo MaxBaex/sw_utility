@@ -605,7 +605,7 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
-  asm volatile("bkpt 0");
+  asm volatile("bkpt 0");  //NOTE: Remove for release or issue reset?
   while (1)
   {
   }
