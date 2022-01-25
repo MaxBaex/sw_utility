@@ -5,6 +5,7 @@
 #include "sensing.h"
 #include "i2c.h"
 #include "bme68x.h"
+#include "communication.h"
 
 
 extern I2C_HandleTypeDef hi2c1;
@@ -133,53 +134,94 @@ int8_t bme68x_interface_init(struct bme68x_dev *bme, uint8_t intf)
 void StartSensingTask(void *argument)
 {
   struct bme68x_dev bme;
-  int8_t rslt;
   struct bme68x_conf conf;
   struct bme68x_heatr_conf heatr_conf;
   struct bme68x_data data;
   uint32_t del_period;
   uint8_t n_fields;
+  CAN_RAW_DATA rawData;
 
-  rslt = bme68x_interface_init(&bme, BME68X_I2C_INTF);
-  bme68x_check_rslt("bme68x_interface_init", rslt);
-
-  rslt = bme68x_init(&bme);
-  bme68x_check_rslt("bme68x_init", rslt);
-
-  /* Check if rslt == BME68X_OK, report or handle if otherwise */
-  conf.filter = BME68X_FILTER_OFF;
-  conf.odr = BME68X_ODR_NONE;
-  conf.os_hum = BME68X_OS_16X;
-  conf.os_pres = BME68X_OS_16X; //BME68X_OS_1X;
-  conf.os_temp = BME68X_OS_16X; //BME68X_OS_2X;
-  rslt = bme68x_set_conf(&conf, &bme);
-  bme68x_check_rslt("bme68x_set_conf", rslt);
-
-  /* Check if rslt == BME68X_OK, report or handle if otherwise */
-  heatr_conf.enable = BME68X_DISABLE;   /* Enabling this causes to high temperature values for quick consecutive readings*/
-  heatr_conf.heatr_temp = 300;
-  heatr_conf.heatr_dur = 100;
-  rslt = bme68x_set_heatr_conf(BME68X_FORCED_MODE, &heatr_conf, &bme);
-  bme68x_check_rslt("bme68x_set_heatr_conf", rslt);
+  if(BME68X_OK != bme68x_interface_init(&bme, BME68X_I2C_INTF))
+    {
+      Error_Handler();
+    }
 
   for(;;)
     {
-      rslt = bme68x_set_op_mode(BME68X_FORCED_MODE, &bme);
-      bme68x_check_rslt("bme68x_set_op_mode", rslt);
-
-      /* Calculate delay period in microseconds */
-      del_period = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, &bme) + (heatr_conf.heatr_dur * 1000);
-      bme.delay_us(del_period, bme.intf_ptr);
-
-
-      /* Check if rslt == BME68X_OK, report or handle if otherwise */
-      rslt = bme68x_get_data(BME68X_FORCED_MODE, &data, &n_fields, &bme);
-      bme68x_check_rslt("bme68x_get_data", rslt);
+      if (BME68X_OK == bme68x_init(&bme))
+	{
+	  /* Check if rslt == BME68X_OK, report or handle if otherwise */
+	  conf.filter = BME68X_FILTER_OFF;
+	  conf.odr = BME68X_ODR_NONE;
+	  conf.os_hum = BME68X_OS_16X;
+	  conf.os_pres = BME68X_OS_16X;
+	  conf.os_temp = BME68X_OS_16X;
 
 
-      vTaskDelay(1);
+	  if (BME68X_OK == bme68x_set_conf(&conf, &bme))
+	    {
+	      /* Check if rslt == BME68X_OK, report or handle if otherwise */
+	      heatr_conf.enable = BME68X_DISABLE;   /* Enabling this causes to high temperature values for quick consecutive readings*/
+	      heatr_conf.heatr_temp = 300;
+	      heatr_conf.heatr_dur = 100;
+
+
+	      if (BME68X_OK == bme68x_set_heatr_conf(BME68X_FORCED_MODE, &heatr_conf, &bme))
+		{
+
+		  for(;;)
+		    {
+		      if(BME68X_OK == bme68x_set_op_mode(BME68X_FORCED_MODE, &bme))
+			{
+			  /* Calculate delay period in microseconds */
+			  del_period = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, &bme) + (heatr_conf.heatr_dur * 1000);
+			  bme.delay_us(del_period, bme.intf_ptr);
+
+			  /* Check if rslt == BME68X_OK, report or handle if otherwise */
+			  if(BME68X_OK == bme68x_get_data(BME68X_FORCED_MODE, &data, &n_fields, &bme))
+			    {
+			      /* Only send data if measurement was successful*/
+			      rawData.id = c_CAN_Id_Temperature;
+			      rawData.value = data.temperature;
+			      if( pdTRUE != xQueueSend(COM_Message_Queue, &rawData, 0))
+				{
+				  Error_Handler();
+				}
+
+			      rawData.id = c_CAN_Id_Humidity;
+			      rawData.value = data.humidity;
+			      if( pdTRUE != xQueueSend(COM_Message_Queue, &rawData, 0))
+				{
+				  Error_Handler();
+				}
+
+			      rawData.id = c_CAN_Id_Pressure;
+			      rawData.value = data.pressure;
+			      if( pdTRUE != xQueueSend(COM_Message_Queue, &rawData, 0))
+				{
+				  Error_Handler();
+				}
+
+			    }
+			  else
+			    {
+			      /* Some error happened. Break loop and reinitialize all*/
+			      break;
+			    }
+
+			}
+		      else
+			{
+			  /* Some error happened. Break loop and reinitialize all*/
+			  break;
+			}
+		    }
+		}
+	    }
+	}
+      /* Wait some time and try again if any error happens*/
+      vTaskDelay(500);
     }
 }
-
 
 

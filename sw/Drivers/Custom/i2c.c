@@ -61,6 +61,7 @@ I2C_StatusTypeDef I2C_Init(I2C_HandleTypeDef *hi2c)
 	}
       else
 	{
+	  I2C1_ResolveStuckSlave();
 	  status = I2C_OK; //Already initialized
 	}
 

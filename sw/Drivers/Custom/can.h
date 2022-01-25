@@ -17,7 +17,7 @@
 #include "FreeRTOS.h"
 
 #define CAN_RX_QUEUE_LEN 100
-#define CAN_RX_TIMEOUT_MS 100
+#define CAN_RX_TIMEOUT_MS 0
 extern CAN_HandleTypeDef hcan1;
 
 

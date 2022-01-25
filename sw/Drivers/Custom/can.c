@@ -5,16 +5,16 @@
 QueueHandle_t CAN1_rxQueue_Id;
 
 
-  HAL_StatusTypeDef CAN_Init(CAN_HandleTypeDef *hcan)
+HAL_StatusTypeDef CAN_Init(CAN_HandleTypeDef *hcan)
 {
   if(hcan->Instance == CAN1)
-  {
-    CAN1_rxQueue_Id = xQueueCreate(CAN_RX_QUEUE_LEN, sizeof(CAN_Packet_t));
-    if (CAN1_rxQueue_Id == 0)
     {
-      Error_Handler();
+      CAN1_rxQueue_Id = xQueueCreate(CAN_RX_QUEUE_LEN, sizeof(CAN_Packet_t));
+      if (CAN1_rxQueue_Id == 0)
+	{
+	  Error_Handler();
+	}
     }
-  }
 
   /*Receive all messages on fifo 0, do not filter yet*/
   CAN_FilterTypeDef sFilterConfig;
@@ -66,13 +66,13 @@ HAL_StatusTypeDef CAN_Receive(CAN_HandleTypeDef *hcan, CAN_Packet_t *p)
   if(hcan->Instance == CAN1)
     {
       if (xQueueReceive(CAN1_rxQueue_Id, p, CAN_RX_TIMEOUT_MS) == pdTRUE)
-      	{
-      	  return HAL_OK;
-      	}
+	{
+	  return HAL_OK;
+	}
       else
-      	{
-      	  return HAL_TIMEOUT;
-      	}
+	{
+	  return HAL_TIMEOUT;
+	}
     }
 
   return HAL_ERROR;
@@ -121,17 +121,17 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
   p.dlc = rxfifo0_header.DLC;
 
   for (int i = 0; i < p.dlc; i++)
-  {
-    p.data_b[i] = rxfifo0_rxData[i];
-  }
+    {
+      p.data_b[i] = rxfifo0_rxData[i];
+    }
 
   if(hcan->Instance == CAN1)
-  {
-    if( xQueueSendFromISR(CAN1_rxQueue_Id, &p, &xHigherPriorityTaskWokenByPost) != pdTRUE)
-  	{
-  	  Error_Handler();
-  	}
-  }
+    {
+      if( xQueueSendFromISR(CAN1_rxQueue_Id, &p, &xHigherPriorityTaskWokenByPost) != pdTRUE)
+	{
+	  Error_Handler();
+	}
+    }
 
   portYIELD_FROM_ISR(xHigherPriorityTaskWokenByPost);
 }

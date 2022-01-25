@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include "FreeRTOS.h"
+#include "queue.h"
 
   //
   //  ******** Package IDs *****************************************************
@@ -14,6 +16,7 @@ extern "C" {
 
     c_CAN_Id_Temperature          = 0x214,    //!< int32_t  // temp * 1000
     c_CAN_Id_Humidity             = 0x215,    //!< unit32_t // hum * 1000
+    c_CAN_Id_Pressure		  = 0x216,    //!< unit32_t // pressure[Pa] * 1000
 
     //
     //  FrontEnd to Audio
@@ -47,9 +50,14 @@ extern "C" {
   };
 
 
-
+  typedef struct
+  {
+      float value;
+      uint32_t id;
+  }CAN_RAW_DATA;
 
 void StartComTask(void *argument);
+extern QueueHandle_t COM_Message_Queue;
 
 #ifdef __cplusplus
 }
