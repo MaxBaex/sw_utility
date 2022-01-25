@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "audio.h"
 #include "communication.h"
+#include "sensing.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,13 +60,15 @@ UART_HandleTypeDef huart3;
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .stack_size = 128 * 8,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
 osThreadId_t audioTaskHandle;
 
 osThreadId_t  communicationTaskHandle;
+
+osThreadId_t  sensingTaskHandle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -153,9 +156,11 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  //audioTaskHandle = osThreadNew(StartAudioTask, NULL,  &defaultTask_attributes);
+  audioTaskHandle = osThreadNew(StartAudioTask, NULL,  &defaultTask_attributes);
 
   communicationTaskHandle = osThreadNew(StartComTask, NULL, &defaultTask_attributes);
+
+  sensingTaskHandle = osThreadNew(StartSensingTask, NULL, &defaultTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -600,6 +605,7 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
+  asm volatile("bkpt 0");
   while (1)
   {
   }

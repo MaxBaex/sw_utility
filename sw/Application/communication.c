@@ -1,5 +1,6 @@
 #include "audio.h"
-#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "task.h"
 #include "stm32f1xx_hal.h"
 #include "main.h"
 #include "can.h"

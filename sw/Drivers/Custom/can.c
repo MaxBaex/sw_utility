@@ -56,7 +56,7 @@ HAL_StatusTypeDef CAN_Send(CAN_HandleTypeDef *hcan, CAN_Packet_t *p)
   canHeader.RTR = CAN_RTR_DATA;
   canHeader.DLC = p->dlc;
 
-  uint32_t usedMailbox;
+  uint32_t usedMailbox;  // NOTE: only required for STM32F1
 
   return HAL_CAN_AddTxMessage(hcan, &canHeader, p->data_b, &usedMailbox);
 }
