@@ -99,61 +99,65 @@ void StartSensingTask(void *argument)
   uint8_t n_fields;
   CAN_RAW_DATA rawData;
 
-  if(BME68X_OK != bme68x_interface_init(&bme, BME68X_I2C_INTF))
-    {
-      Error_Handler();
-    }
-
   for(;;)
     {
-      if (BME68X_OK == bme68x_init(&bme))
+      if (BME68X_OK == bme68x_interface_init(&bme, BME68X_I2C_INTF))
 	{
-	  conf.filter = BME68X_FILTER_OFF;
-	  conf.odr = BME68X_ODR_NONE;
-	  conf.os_hum = BME68X_OS_16X;
-	  conf.os_pres = BME68X_OS_16X;
-	  conf.os_temp = BME68X_OS_16X;
-
-	  if (BME68X_OK == bme68x_set_conf(&conf, &bme))
+	  if (BME68X_OK == bme68x_init(&bme))
 	    {
-	      heatr_conf.enable = BME68X_DISABLE;   /* Enabling this causes to high temperature values for quick consecutive readings*/
-	      heatr_conf.heatr_temp = 300;
-	      heatr_conf.heatr_dur = 100;
+	      conf.filter = BME68X_FILTER_OFF;
+	      conf.odr = BME68X_ODR_NONE;
+	      conf.os_hum = BME68X_OS_16X;
+	      conf.os_pres = BME68X_OS_16X;
+	      conf.os_temp = BME68X_OS_16X;
 
-	      if (BME68X_OK == bme68x_set_heatr_conf(BME68X_FORCED_MODE, &heatr_conf, &bme))
+	      if (BME68X_OK == bme68x_set_conf(&conf, &bme))
 		{
+		  heatr_conf.enable = BME68X_DISABLE;   /* Enabling this causes to high temperature values for quick consecutive readings*/
+		  heatr_conf.heatr_temp = 300;
+		  heatr_conf.heatr_dur = 100;
 
-		  for(;;)  /* Enter cyclic measurement mode here */
+		  if (BME68X_OK == bme68x_set_heatr_conf(BME68X_FORCED_MODE, &heatr_conf, &bme))
 		    {
-		      if(BME68X_OK == bme68x_set_op_mode(BME68X_FORCED_MODE, &bme))
+
+		      for(;;)  /* Enter cyclic measurement mode here */
 			{
-			  /* Calculate delay period in microseconds */
-			  del_period = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, &bme) + (heatr_conf.heatr_dur * 1000);
-			  bme.delay_us(del_period, bme.intf_ptr);
-
-			  /* Check if rslt == BME68X_OK, report or handle if otherwise */
-			  if(BME68X_OK == bme68x_get_data(BME68X_FORCED_MODE, &data, &n_fields, &bme))
+			  if(BME68X_OK == bme68x_set_op_mode(BME68X_FORCED_MODE, &bme))
 			    {
-			      /* Only send data if measurement was successful */
-			      rawData.id = c_CAN_Id_Temperature;
-			      rawData.value = data.temperature;
-			      if( pdTRUE != xQueueSend(COM_Message_Queue, &rawData, 0))
-				{
-				  Error_Handler();
-				}
+			      /* Calculate delay period in microseconds */
+			      del_period = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, &bme) + (heatr_conf.heatr_dur * 1000);
+			      bme.delay_us(del_period, bme.intf_ptr);
 
-			      rawData.id = c_CAN_Id_Humidity;
-			      rawData.value = data.humidity;
-			      if( pdTRUE != xQueueSend(COM_Message_Queue, &rawData, 0))
+			      /* Check if rslt == BME68X_OK, report or handle if otherwise */
+			      if(BME68X_OK == bme68x_get_data(BME68X_FORCED_MODE, &data, &n_fields, &bme))
 				{
-				  Error_Handler();
-				}
+				  /* Only send data if measurement was successful */
+				  rawData.id = c_CAN_Id_Temperature;
+				  rawData.value = data.temperature;
+				  if( pdTRUE != xQueueSend(COM_Message_Queue, &rawData, 0))
+				    {
+				      Error_Handler();
+				    }
 
-			      rawData.id = c_CAN_Id_Pressure;
-			      rawData.value = data.pressure;
-			      if( pdTRUE != xQueueSend(COM_Message_Queue, &rawData, 0))
+				  rawData.id = c_CAN_Id_Humidity;
+				  rawData.value = data.humidity;
+				  if( pdTRUE != xQueueSend(COM_Message_Queue, &rawData, 0))
+				    {
+				      Error_Handler();
+				    }
+
+				  rawData.id = c_CAN_Id_Pressure;
+				  rawData.value = data.pressure;
+				  if( pdTRUE != xQueueSend(COM_Message_Queue, &rawData, 0))
+				    {
+				      Error_Handler();
+				    }
+
+				}
+			      else
 				{
-				  Error_Handler();
+				  /* Some error happened. Break loop and reinitialize everything from scratch */
+				  break;
 				}
 
 			    }
@@ -162,12 +166,6 @@ void StartSensingTask(void *argument)
 			      /* Some error happened. Break loop and reinitialize everything from scratch */
 			      break;
 			    }
-
-			}
-		      else
-			{
-			  /* Some error happened. Break loop and reinitialize everything from scratch */
-			  break;
 			}
 		    }
 		}
