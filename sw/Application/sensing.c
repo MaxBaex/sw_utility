@@ -131,6 +131,9 @@ void StartSensingTask(void *argument)
 			      /* Check if rslt == BME68X_OK, report or handle if otherwise */
 			      if(BME68X_OK == bme68x_get_data(BME68X_FORCED_MODE, &data, &n_fields, &bme))
 				{
+				  /*Signal that reading BME680 works*/
+				  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+
 				  /* Only send data if measurement was successful */
 				  rawData.id = c_CAN_Id_Temperature;
 				  rawData.value = data.temperature;
@@ -172,6 +175,7 @@ void StartSensingTask(void *argument)
 	    }
 	}
       /* Wait some time and try again if any error happens */
+      HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
       vTaskDelay(500);
     }
 }
