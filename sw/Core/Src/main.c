@@ -23,7 +23,7 @@
 #include "usb_device.h"
 #include "System_Configuration.h"
 #include "can.h"
-//#include "common.h"
+//#include "common.h"  //just a comment
 
 
 /* Private includes ----------------------------------------------------------*/
