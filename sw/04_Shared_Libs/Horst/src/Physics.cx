@@ -1,0 +1,165 @@
+//
+// ****************************************************************************
+//
+//  Physics.c
+//
+//-  Version 98   10.06.2009
+//
+// ****************************************************************************
+//
+
+#include  "Generic_Includes.h"
+
+// **************************************************************************
+
+#define _c_MaxNoCoeff 6
+
+#define  cGravConstant2  0.0264;
+#define  cGravConstant3  0.000003;
+
+//**************************************************************************
+//  FL aus dem Umgebungsdruck
+//  unter der Annahme von ISA Temperatur-Verlauf
+//  QNH --> MSL // 1013.25 hPa --> FL
+//**************************************************************************
+
+float FL_at ( float AmbPressure )
+{
+        float x = AmbPressure * 100.0f;
+        float xx = x*x;
+        float xxx = xx*x;
+
+        return (
+                  -2.950252498658470e-13f * xxx +
+                  8.595359482292255e-08f  * xx  +
+                  -0.011308198651950f     * x   +
+                  5.700408362722274e+02f + 0.5f
+               );
+}
+
+
+//**************************************************************************
+//  Hoehe aus der Differenz Referenz-Druck zu Umgebungsdruck
+//  unter der Annahme von ISA Temperatur-Verlauf
+//  QNH --> MSL // 1013.25 hPa --> FL
+//**************************************************************************
+
+float PressureAltitude_at ( float AmbPressure, float RefPressure )
+{
+
+double Coeff [_c_MaxNoCoeff] =  {
+                      1.90955840078000E+0004,
+                      -4.85268288723882E-0001,
+                      6.84190698026286E-0006,
+                      -6.71650910749318E-0011,
+                      3.66813672194949E-0016,
+                      -8.39301923602972E-0022
+                      };
+  float  CorrAmbPressure, TmpResult, NextFactor;
+  int    i;
+
+  CorrAmbPressure = AmbPressure * 100.0 * c_QNH_NN / RefPressure;
+  TmpResult       = Coeff[0] + Coeff[1] * CorrAmbPressure;
+  NextFactor      = CorrAmbPressure;
+  for ( i = 2 ; i < _c_MaxNoCoeff ; ++i )
+    {
+     NextFactor   = NextFactor * CorrAmbPressure;
+     TmpResult    = TmpResult + Coeff[i] * NextFactor;
+    }
+  return TmpResult ;
+}
+
+//**************************************************************************
+//  ISA Temperaturverlauf
+//**************************************************************************
+
+float ISA_Temperature_at ( int PressureAltitude )
+{
+  return ( c_ISA_Temp_NN - PressureAltitude * c_ISA_TempGradient ) ;
+}
+
+//**************************************************************************
+//  Hoehendifferenz zwischen dem Druckniveau des Umgebungsdrucks
+//  und dem Druckniveau eines Referenzdrucks bei einer von ISA
+//  abweichenden Umgebungstemperatur.
+//  RefPressure kann sinnvollerweise sein : 1013.25 hPa (--> FL, MSL) oder = QFF
+//**************************************************************************
+
+float DensityAltitude_at ( int PressureAltitude, float AltStep, float RefPressure, float OAT )
+{
+  return ( PressureAltitude +
+        ( RefPressure - c_QNH_NN ) * AltStep +
+        ( OAT - ISA_Temperature_at ( PressureAltitude ) ) * c_TempStep_Per_Deg );
+}
+
+//**************************************************************************
+//  Dichte in Abhaengigkeit der Hoehe (ISA)
+//**************************************************************************
+float Density_at ( float AmbPressure, float OAT )
+{
+  return ( AmbPressure * 100.0 / c_Rd / ( c_Zero_Deg_C_in_K + OAT ) );
+}
+
+//**************************************************************************
+//  Geschwindigkeit aus dem Staudruck
+//  PitotPressure = Staudruck - Umgebungsdruck : in hPa
+//  IAS : in km/h
+//  Fahrtmesser ist dann auf Rho_NN geeicht !
+//  Nicht alle Fahrtmesser sind so geeicht, sondern auf die Dichte in 1000m MSL.
+//**************************************************************************
+
+int16_t IAS_at ( float PitotPressure )
+{
+  if ( PitotPressure < 0.0 ) {
+    return 0;
+  }
+  else {
+    return ( VSQRTF ( 2 * PitotPressure / c_Rho_NN ) * 36.0 );
+  }
+}
+
+//**************************************************************************
+
+int16_t TAS_at ( int16_t CAS, float AmbDensity )
+{
+  int16_t i_result;
+
+  i_result = floor ( CAS * VSQRTF ( c_Rho_NN / AmbDensity ) + 0.5 );
+  return i_result;
+}
+
+//**************************************************************************
+//  QFF Errechnung
+//**************************************************************************
+
+float QFF_at ( int32_t Altitude, float OAT, float AmbPressure, float Latitude_in_Rad )
+{
+  float TmittelKelvin;
+  float GravitationsFaktor;
+
+  TmittelKelvin       = ( c_Zero_Deg_C_in_K + OAT + c_ISA_TempGradient * Altitude / 2.0 );
+  GravitationsFaktor  = c_Gravitation - cos ( Latitude_in_Rad ) * cGravConstant2  - Altitude * cGravConstant3;
+  return AmbPressure * exp ( Altitude / ( c_Rd * TmittelKelvin / GravitationsFaktor ) );
+}
+
+//**************************************************************************
+//  QNH Errechnung
+//**************************************************************************
+
+float QNH_at ( int32_t Altitude, float AmbPressure, float Latitude_in_Rad )
+{
+  float TmittelKelvin;
+  float GravitationsFaktor;
+  float QNH;
+
+  TmittelKelvin       = ( c_Zero_Deg_C_in_K + c_ISA_Temp_NN - c_ISA_TempGradient * Altitude / 2.0 );
+  GravitationsFaktor  = c_Gravitation - cos ( Latitude_in_Rad ) * cGravConstant2  - Altitude * cGravConstant3;
+  acquire_privileges();
+  QNH = AmbPressure * exp ( Altitude / ( c_Rd * TmittelKelvin / GravitationsFaktor ) );
+  drop_privileges();
+  return QNH;
+}
+
+// --------------------------------------------------------------------------------
+// The End
+// --------------------------------------------------------------------------------
