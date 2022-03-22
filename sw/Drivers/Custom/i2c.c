@@ -18,7 +18,7 @@ static QueueHandle_t I2C1_CPL_Message_Id = NULL;
 static void I2C1_ResolveStuckSlave(void)
 {
   /* Reset a slave which potentially blocks the bus by pulling the data line to low. Very sporadic issue.
-   * Can happen if stm32 is reset during a i2c transaction*/
+   * Can happen if stm32 is reset during an i2c transaction*/
   HAL_I2C_DeInit(&hi2c1);
 
   /* Configure SDA to input to monitor success*/
