@@ -26,7 +26,7 @@
 
 
   //
-  void  Emulator             ( void * nix);
+  void  Emulator             ( void * nix );
 
 #endif
 //

@@ -23,7 +23,7 @@
 #include "usb_device.h"
 #include "System_Configuration.h"
 #include "can.h"
-//#include "common.h"  //just a comment
+//#include "common.h"
 
 
 /* Private includes ----------------------------------------------------------*/
@@ -236,7 +236,7 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+  //RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
   */

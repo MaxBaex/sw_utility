@@ -20,24 +20,29 @@
 //
 #include  "Generic_Common_org.h"
 #include  "Generic_Includes.h"
+#include  "can.h"
+
 #ifdef RUN_CAN_TASKS
   #include  "task_CAN_Bus_Receiver.h"
   #include  "task_CAN_Bus_Sender.h"
 #endif
+
 #ifdef  RUN_SIDEWALL_SENSOR
-  #include  <task_SideWall_Sensor.h>
+  #include  "task_SideWall_Sensor.h"
   #include  "task_Flaps_LED.h"
 #endif
+
 #ifdef RUN_AUDIO
   #include  "task_Audio_Controller.h"
 #endif
+
 #ifdef RUN_TEMPHUM_SENSOR
   #include  "task_TempHum_Sensor.h"
 #endif
+
 #ifdef RUN_EMULATOR
   #include  "task_Emulator.h"
 #endif
-#include  "can.h"
 
 //
 // ******************************************************************************
@@ -72,7 +77,6 @@ void AUDIO_Main(void)
 
   //
   //  ##########################################################################
-
   //
   //  Intertask communication setup
   //

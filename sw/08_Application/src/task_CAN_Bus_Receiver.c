@@ -141,12 +141,12 @@ void CAN_Bus_Receiver ( void * nix )
           g_TC_SWC        = (float) p.data_h[1] * 0.1;
           g_TC_FWG        = (float) p.data_h[2] * 0.1;
           g_TC_SWG        = (float) p.data_h[3] * 0.1;
-          g_last_time     = 0;  // Feedbck immediately
+          g_last_time     = 0;  // Feedback immediately
           break;
 
         case  c_CID_A57_Sw_Hysteresis :
           g_TC_Hysteresis = (float) p.data_h[0] * 0.1;
-          g_last_time     = 0;  // Feedbck immediately
+          g_last_time     = 0;  // Feedback immediately
           break;
 
         case  c_CID_A57_Euler_SetUp :

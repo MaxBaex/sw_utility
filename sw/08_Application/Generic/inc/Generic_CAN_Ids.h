@@ -32,7 +32,7 @@
   enum CAN_PACKAGE_IDs
   {
     //
-    //  CAN packages with source Klaus-Sensor-Box
+    //  CAN packages with source FSB (Klaus-Sensor-Box)
     //
     c_CID_KSB_HeartBeat        = 0x100,
     c_CID_KSB_EulerAngles      = 0x101,    //!< int16_t roll nick yaw / 1/1000 rad
@@ -80,7 +80,7 @@
                                            //!< int16_t as float dec deg * 10    // Inclination
 
     //
-    //  CAN packages with source Horst-Audio
+    //  CAN packages with source AUD (Horst-Audio)
     //
     c_CID_AUD_HeartBeat        = 0x200,
     c_CID_AUD_CMD_2_XCSOAR     = 0x201,    //!< uint8_t command for XCSoar
@@ -95,6 +95,8 @@
     c_CID_AUD_Pressure         = 0x205,    //!< unit32_t as float press * 1000
     c_CID_AUD_Flaps_Data       = 0x206,    //!< uint16_t position [percent * 100]
                                            //!> + uint8_t switch pattern [0b0000-0b1111]
+
+#ifdef  RUN_EMULATOR
     c_CID_AUD_TCs              = 0x207,    //!< int16_t as float sec * 10 tau for fast wind in cruise +
                                            //!< int16_t as float sec * 10 tau for slow wind in cruise +
                                            //!< int16_t as float sec * 10 tau for fast wind in climb +
@@ -105,6 +107,7 @@
                                            //!< int16_t as float dec deg * 10    // Yaw
     c_CID_AUD_DecInclination   = 0x20a,    //!< int16_t as float dec deg * 10 +  // Declination
                                            //!< int16_t as float dec deg * 10    // Inclination
+#endif
 
     //
     //  CAN packages with source AD57

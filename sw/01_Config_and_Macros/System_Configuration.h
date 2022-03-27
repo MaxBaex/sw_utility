@@ -9,8 +9,9 @@
   #ifdef BUILD_AUDIO
     #define RUN_AUDIO
     #define RUN_CAN_TASKS
-    #define RUN_SIDEWALL_SENSOR
+    //#define RUN_SIDEWALL_SENSOR
     #define RUN_TEMPHUM_SENSOR
+    #define RUN_EMULATOR
     //#define BRIGHTNESS_REGULATION_ACTIVE
 
     //#define   USE_CAN1
@@ -22,7 +23,6 @@
     #define TEST_ANAUTHORIZED_ACCESS  0
     #define RUN_GPIO_TESTER           0
     #define RUN_CAN_TEST              0
-    #define RUN_EMULATOR
   #endif
 
   #ifdef BUILD_BOOTLOADER

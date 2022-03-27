@@ -56,7 +56,7 @@ void CAN_Bus_Sender ( void * nix )
   uint32_t  l_ret32;
   CAN_Packet_t p;
   uint16_t  l_count = 0;
-  uint32_t  l_last_time_stamp;
+  //uint32_t  l_last_time_stamp;
 
   //
   // the works
@@ -87,13 +87,13 @@ void CAN_Bus_Sender ( void * nix )
 
 #ifdef RUN_EMULATOR
     //
-    //  if event Q not empty, send data
+    //  if SensorOut Q not empty, send data
     //
     if ( uxQueueMessagesWaiting( SensorOutQId ) > 0 )
     {
       if ( xQueueReceive ( SensorOutQId, &SensorOutQItem, 200 ) == 1 )
       {
-        p.id        = SensorOutQItem.CAN_Id;
+        p.id        = SensorOutQItem.CAN_Id; // -------------------------------
         p.dlc       = 8;
         p.data_h[0] = SensorOutQItem.value1;
         p.data_h[1] = SensorOutQItem.value2;
@@ -108,13 +108,13 @@ void CAN_Bus_Sender ( void * nix )
         l_ret32 = CAN_Send ( &hcan2, &p );
 #endif
         //ASSERT ( l_ret32 == HAL_OK );
-        break;
+        //break;
       }
     }
 #endif
 
     //
-    //  if event Q not empty, send data
+    //  if Event Q not empty, send data
     //
     if ( uxQueueMessagesWaiting( EventQId ) > 0 )
     {

@@ -14,7 +14,6 @@
 #include  "task_TempHum_Sensor.h"
 
 #define   c_blink_alive_limit 4
-// neuer Kommentar
 
 // =============================================================================
 //
